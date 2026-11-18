@@ -1,0 +1,13 @@
+# runtime del paquete portable: corre desde esta carpeta pero NO es parte del repo
+Rainmeter/
+Herramienta/
+Iniciar.vbs
+Detener.vbs
+LEEME-Portatil.txt
+MyEffects-Portatil.zip
+
+# archivos de runtime que pueden aparecer en Fuente
+Fuente/Herramienta/temas.log
+Fuente/Herramienta/estado.txt
+Fuente/Herramienta/ultimo.txt
+Fuente/Herramienta/bloqueo.tmp
