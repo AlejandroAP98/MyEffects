@@ -14,6 +14,7 @@ param(
     [int]$Numero = -1,
     [int]$Subir = -1,
     [int]$Bajar = -1,
+    [int]$Ocultar = -1,
     [switch]$Publicar,
     [switch]$Azar,
     [switch]$Rotar
@@ -104,6 +105,7 @@ function Publicar-Lista {
     $idx = [array]::IndexOf(($temas | ForEach-Object { $_.Nombre }), (Tema-Actual))
     Escribir-Reg 'Activo' ($idx + 1)
     if ($idx -ge 0) { Escribir-Reg 'SiguienteCiclo' $temas[(($idx + 1) % $temas.Count)].Nombre }
+    elseif ($temas.Count -gt 0) { Escribir-Reg 'SiguienteCiclo' $temas[0].Nombre }
 }
 
 function Aplicar-Efecto($efecto) {
@@ -138,6 +140,10 @@ function Marcar-Tema($nombre) {
     if ($idx -ge 0) {
         Escribir-Reg 'Activo' ($idx + 1)
         Escribir-Reg 'SiguienteCiclo' $lista[(($idx + 1) % $lista.Count)].Nombre
+    } elseif ($lista.Count -gt 0) {
+        # el activo no esta en la lista (ocultado): sugerir el primero visible
+        Escribir-Reg 'Activo' 0
+        Escribir-Reg 'SiguienteCiclo' $lista[0].Nombre
     }
 }
 
@@ -189,6 +195,29 @@ if ($Rotar) {
 
 if ($Publicar) {
     Publicar-Lista
+    exit 0
+}
+
+if ($Ocultar -ge 1) {
+    # ocultar el tema N de la lista: lo convierte en comentario en temas.txt
+    # (no se pierde: vuelve a la lista con el boton Actualizar o editando el archivo)
+    $fs = Bloquear
+    try {
+        $lineas = @(Get-Content $temasFile -EA SilentlyContinue)
+        $visibles = 0
+        for ($i = 0; $i -lt $lineas.Count; $i++) {
+            $t = $lineas[$i].Trim()
+            if ($t -eq '' -or $t.StartsWith('#')) { continue }
+            $visibles++
+            if ($visibles -eq $Ocultar) {
+                $lineas[$i] = '# ' + $t
+                Set-Content -Path $temasFile -Value $lineas -ErrorAction SilentlyContinue
+                Log ("ocultado de la lista: '{0}' (vuelve con Actualizar)" -f $t)
+                Publicar-Lista
+                break
+            }
+        }
+    } finally { if ($fs) { $fs.Close() } }
     exit 0
 }
 

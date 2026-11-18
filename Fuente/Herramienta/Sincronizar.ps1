@@ -48,18 +48,27 @@ if ($nombres.Count -eq 0) {
     exit 1
 }
 
-# conservar el ORDEN personalizado: mantener los temas ya en el archivo
-# (en su orden actual), quitar los desinstalados y agregar los nuevos al final
-$existentes = @()
+# conservar el ORDEN personalizado: los temas ocultos (#) vuelven a su posicion
+# original con el refresco (si siguen instalados); quitar los desinstalados
+# y agregar los nuevos al final
+$finales = @()
 Get-Content $temasFile -EA SilentlyContinue | ForEach-Object {
     $l = $_.Trim()
-    if ($l -eq '' -or $l.StartsWith('#')) { return }
+    $oculto = $l.StartsWith('#')
+    if ($oculto) { $l = $l.Substring(1).Trim() }
+    if ($l -eq '') { return }
     if ($l -match '^\d{1,2}:\d{2}\s*;\s*(.+)$') { $l = $Matches[1].Trim() }
-    if ($l) { $existentes += $l }
+    if (-not $l) { return }
+    if ($oculto) {
+        # solo recupera si sigue instalado (los comentarios de cabecera se ignoran solos)
+        if ($nombres -contains $l) { $finales += $l }
+        return
+    }
+    $finales += $l
 }
-$mantenidos = @($existentes | Where-Object { $nombres -contains $_ })
-$nuevos = @($nombres | Where-Object { $existentes -notcontains $_ })
-$listaFinal = @($mantenidos) + $nuevos
+$listaFinal = @(@($finales | Select-Object -Unique) | Where-Object { $nombres -contains $_ })
+$nuevos = @($nombres | Where-Object { $listaFinal -notcontains $_ })
+$listaFinal = @($listaFinal) + $nuevos
 
 $contenido = @(
     "# Temas RGB: lista sincronizada desde SignalRGB (boton Actualizar del widget)"

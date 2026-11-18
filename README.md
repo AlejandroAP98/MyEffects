@@ -13,6 +13,7 @@ Widget de escritorio para **controlar los efectos de SignalRGB desde Windows**: 
 - **Rotación automática** con cuenta regresiva y barra de progreso tricolor (NO · 30 m · 60 m · 180 m · 360 m · 720 m)
 - **Punto violeta** que marca el tema activo en la lista
 - **Reordenar** la lista con ▲▼ (el orden personalizado se conserva al sincronizar)
+- **Ocultar temas** de la lista con la ✕ de cada fila (no se borran de SignalRGB; el ⟳ los recupera a su posición)
 - **Sincronización** con los efectos instalados (agrega nuevos, elimina desinstalados)
 - **Atajos de teclado globales**:
   - `Ctrl + Alt + →` — siguiente tema
@@ -45,7 +46,8 @@ La primera vez registra el autoarranque y deja todo corriendo. En pantalla apare
 | 🎲 Dado | Tema aleatorio |
 | ⏰ Reloj | Ciclar rotación automática (NO → 30 m → … → 720 m) |
 | ▲▼ en la lista | Reordenar |
-| ⟳ (cabecera) | Re-sincronizar con SignalRGB |
+| ✕ en la lista | Ocultar el tema de la lista (no se borra de SignalRGB) |
+| ⟳ (cabecera) | Re-sincronizar con SignalRGB (recupera los temas ocultos a su posición) |
 | Punto violeta | Indica el tema activo |
 | Barra superior | Progreso hasta el próximo cambio automático |
 

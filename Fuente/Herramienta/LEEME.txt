@@ -46,6 +46,11 @@ EDITAR LA LISTA
   - A mano: notepad temas.txt (una linea por efecto, el orden manda).
   - O sincroniza con ⟳ despues de instalar/quitar efectos en SignalRGB.
   - El orden personalizado se conserva al sincronizar.
+  - OCULTAR TEMAS: la X a la derecha de cada fila saca el tema de la
+    lista (se guarda como comentario "# Nombre" en temas.txt, no se
+    borra de SignalRGB). El boton ⟳ los recupera a su posicion.
+  - Si el tema activo esta ocultado, el punto violeta desaparece y la
+    rotacion cicla solo entre los visibles.
 
 DIAGNOSTICO
 -----------
