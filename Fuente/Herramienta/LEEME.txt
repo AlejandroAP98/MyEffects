@@ -1,0 +1,59 @@
+=====================================================
+ MyEffects - control de SignalRGB desde el escritorio
+=====================================================
+Gratis. Sin SignalRGB Pro. Todo automatico al iniciar sesion.
+
+QUES ES QUE
+-----------
+  Temas-RGB.ps1      Motor: publica la lista de temas en el registro
+                     (para el widget) + rotacion automatica + comandos.
+  Atajos-RGB.ps1     Oyente de teclado (residente).
+  Vigilante.ps1      Cada 5 min relanza motor/atajos si murieron.
+  *.vbs              Lanzadores 100% invisibles (sin ventanas de consola).
+  Cambiar-Tema.bat   Menu en consola (temas, reiniciar motor, log...).
+  Registrar-AutoArranque.ps1   Crea las tareas programadas.
+  Eliminar-AutoArranque.ps1    Las elimina (desinstalacion parcial).
+  temas.txt          TU LISTA: un efecto por linea (nombre EXACTO en SignalRGB).
+  estado.txt         Tema aplicado actualmente (uso interno).
+  ultimo.txt         Marca de enfriamiento 6 s entre cambios (uso interno).
+  temas.log          Registro de todo (cambios, errores, reorden...).
+
+WIDGET (Rainmeter "MyEffects", esquina inferior derecha)
+--------------------------------------------
+  Contraido: tema activo + flechas ◁ ▷ (clic en cualquier parte abre la lista).
+  Desplegado:
+    - [Azar]  aplica un tema al azar
+    - [Reloj] rotacion automatica: NO, 30 m, 60 m, 180 m, 360 m, 720 m
+              (el reloj se pinta violeta cuando esta activa)
+    - [⟳]     sincroniza la lista con los efectos instalados en SignalRGB
+              (conserva tu orden; los nuevos se agregan al final)
+    - Lista: clic en un tema para aplicarlo; ▲▼ reordenan la lista.
+  Colores: reloj violeta = rotacion activa. Franja superior = R/G/B.
+
+ATAJOS DE TECLADO
+-----------------
+  Ctrl + Alt + ->   siguiente tema
+  Ctrl + Alt + <-   tema anterior
+  Ctrl + Alt + P    apagar luces (Solid Color como pausa)
+
+ROTACION AUTOMATICA
+-------------------
+  Con el reloj en 30 m / 60 m / ... la lista va cambiando sola al
+  siguiente tema cada intervalo. El contador arranca al activarlo.
+
+EDITAR LA LISTA
+---------------
+  - A mano: notepad temas.txt (una linea por efecto, el orden manda).
+  - O sincroniza con ⟳ despues de instalar/quitar efectos en SignalRGB.
+  - El orden personalizado se conserva al sincronizar.
+
+DIAGNOSTICO
+-----------
+  temas.log registra cada cambio, error y reorden. Si algo falla,
+  mira las ultimas lineas.
+
+DESINSTALAR
+-----------
+  1. Eliminar-AutoArranque.ps1 (tareas + procesos)
+  2. Desinstalar Rainmeter y borrar la skin TemasRGB
+  3. Borrar la carpeta Temas-RGB

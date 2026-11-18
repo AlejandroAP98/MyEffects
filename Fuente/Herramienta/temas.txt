@@ -1,0 +1,13 @@
+# Temas RGB: lista sincronizada desde SignalRGB (boton Actualizar del widget)
+# Un efecto por linea (nombre EXACTO). El orden personalizado se conserva;
+# los efectos nuevos se agregan al final.
+
+Embers
+Neon Shift
+Neon Storm
+Christmas Lights
+Rainbow
+Screen Ambience
+Side To Side
+Solid Color
+Titanium

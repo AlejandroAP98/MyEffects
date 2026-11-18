@@ -83,6 +83,15 @@ MyEffects-Portatil/
    └─ temas.log         registro de diagnóstico
 ```
 
+## Desarrollo
+
+El código fuente completo vive en [`Fuente/`](Fuente/):
+
+- `Fuente/Herramienta/` — motor, atajos, vigilante, sincronización y lanzadores (PowerShell + VBS)
+- `Fuente/Skin/MyEffects/` — el widget de Rainmeter (INI + iconos)
+
+Todo son scripts planos: se pueden leer y modificar con cualquier editor. Para empaquetar una nueva versión portable se copia `Herramienta/` y `Skin/MyEffects/` junto a una carpeta de Rainmeter portable (`Rainmeter.exe /S /PORTABLE=1 /D=...`).
+
 ## Desinstalación
 
 1. Doble clic en **`Detener.vbs`** (borra tareas, accesos y cierra todo)
