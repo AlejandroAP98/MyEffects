@@ -90,7 +90,9 @@ Get-Content $temasFile -EA SilentlyContinue | ForEach-Object {
     if ($l -match '^([^;]+?)\s*;\s*(.+)$') {
         $nombre = $Matches[2].Trim()
         $pref = $Matches[1].Trim()
-        $efecto = if ($pref -match '^\d{1,2}:\d{2}$') { $nombre } else { $pref }
+        if ($pref -match '^\d{1,2}:\d{2}$') { $efecto = $nombre }
+        elseif ($pref -match '^[\w-]{10,}$') { $efecto = $pref }
+        else { $efecto = $nombre }  # prefijo raro (texto libre): aplicar por nombre
     }
     if (-not $nombre) { return }
     $enArchivo += [PSCustomObject]@{ Nombre = $nombre; Efecto = $efecto }
@@ -119,8 +121,8 @@ $contenido = @(
     "# Temas RGB: lista sincronizada desde SignalRGB (boton Actualizar del widget)"
     "# Un efecto por linea (nombre EXACTO). El orden personalizado se conserva;"
     "# los efectos nuevos se agregan al final."
-    "# Los efectos remotos de SignalRGB van como '<ID>; Nombre' y el widget los"
-    "# aplica por su ID (solo aparecen tras usarlos una vez en SignalRGB)."
+    "# Los efectos remotos de SignalRGB se guardan como ID + Nombre y el"
+    "# widget los aplica por su ID (solo aparecen tras usarlos una vez)."
     ""
 ) + $listaLineas
 Set-Content -Path $temasFile -Value $contenido -ErrorAction SilentlyContinue

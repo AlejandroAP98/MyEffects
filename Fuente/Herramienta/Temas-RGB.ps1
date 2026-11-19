@@ -87,7 +87,9 @@ function Leer-Temas {
         if ($l -match '^([^;]+?)\s*;\s*(.+)$') {
             $nombre = $Matches[2].Trim()
             $pref = $Matches[1].Trim()
-            $efecto = if ($pref -match '^\d{1,2}:\d{2}$') { $nombre } else { $pref }
+            if ($pref -match '^\d{1,2}:\d{2}$') { $efecto = $nombre }
+            elseif ($pref -match '^[\w-]{10,}$') { $efecto = $pref }
+            else { $efecto = $nombre }  # prefijo raro (texto libre): aplicar por nombre
         }
         $out += [PSCustomObject]@{ Nombre = $nombre; Efecto = $efecto; Linea = $l }
     }
