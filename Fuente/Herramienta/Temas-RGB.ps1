@@ -80,9 +80,16 @@ function Leer-Temas {
     foreach ($l in (Get-Content $temasFile -ErrorAction SilentlyContinue)) {
         $l = $l.Trim()
         if ($l -eq '' -or $l.StartsWith('#')) { continue }
-        # compatibilidad: si la linea trae "HH:MM ; Efecto" se ignora la hora
-        if ($l -match '^\d{1,2}:\d{2}\s*;\s*(.+)$') { $l = $Matches[1].Trim() }
-        $out += [PSCustomObject]@{ Nombre = $l; Efecto = $l }
+        $nombre = $l
+        $efecto = $l
+        # prefijo "HH:MM ; Efecto" (viejo): solo el nombre
+        # prefijo "<ID> ; Efecto" (efectos remotos de SignalRGB): se aplica por ID
+        if ($l -match '^([^;]+?)\s*;\s*(.+)$') {
+            $nombre = $Matches[2].Trim()
+            $pref = $Matches[1].Trim()
+            $efecto = if ($pref -match '^\d{1,2}:\d{2}$') { $nombre } else { $pref }
+        }
+        $out += [PSCustomObject]@{ Nombre = $nombre; Efecto = $efecto; Linea = $l }
     }
     return $out
 }
@@ -230,7 +237,7 @@ if ($Subir -ge 1 -or $Bajar -ge 1) {
         $j = $idx + $delta
         if ($idx -ge 0 -and $idx -lt $temas.Count -and $j -ge 0 -and $j -lt $temas.Count) {
             $cab = @(Get-Content $temasFile -EA SilentlyContinue | Where-Object { $_.Trim() -eq '' -or $_.Trim().StartsWith('#') })
-            $arr = @($temas | ForEach-Object { $_.Nombre })
+            $arr = @($temas | ForEach-Object { $_.Linea })
             $tmp = $arr[$idx]; $arr[$idx] = $arr[$j]; $arr[$j] = $tmp
             Set-Content -Path $temasFile -Value (@($cab) + $arr) -ErrorAction SilentlyContinue
             Log ("orden cambiado: '{0}' -> posicion {1}" -f $temas[$idx].Nombre, ($j + 1))

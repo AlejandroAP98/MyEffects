@@ -51,6 +51,13 @@ EDITAR LA LISTA
     borra de SignalRGB). El boton ⟳ los recupera a su posicion.
   - Si el tema activo esta ocultado, el punto violeta desaparece y la
     rotacion cicla solo entre los visibles.
+  - EFECTOS NUEVOS (SignalRGB reciente): se guardan remotos, sin
+    archivo local. Usalos una vez en SignalRGB y luego pulsa ⟳: el
+    sincronizador los detecta desde los registros de la app y los
+    agrega como "<ID>; Nombre". El widget los aplica por ID.
+    (Un efecto que dejaste de usar hace mas de 3 dias puede dejar de
+    aparecer al sincronizar; agregalo de nuevo a la lista a mano en
+    temas.txt si lo necesitas.)
 
 DIAGNOSTICO
 -----------

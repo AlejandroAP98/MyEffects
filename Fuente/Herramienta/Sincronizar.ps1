@@ -42,6 +42,31 @@ Get-ChildItem $cache -Directory -EA SilentlyContinue | ForEach-Object {
     }
 }
 
+# 3) efectos remotos (SignalRGB nuevo los carga desde la nube sin guardarlos
+#    como archivo): nombres e IDs se extraen del uso reciente en los logs
+$mapa = @{}
+$descubiertos = @()
+$pend = ''
+Get-ChildItem (Join-Path $env:LOCALAPPDATA 'WhirlwindFX\SignalRgb\Logs') -Filter 'SignalRGB_*.log' -EA SilentlyContinue |
+    Where-Object { $_.LastWriteTime -gt (Get-Date).AddDays(-3) } |
+    Sort-Object LastWriteTime |
+    ForEach-Object {
+        Get-Content $_.FullName -EA SilentlyContinue | ForEach-Object {
+            if ($_ -match "New effect requested: '([^']+)'") { $pend = $Matches[1] }
+            elseif ($_ -match "EffectFinding: Searching for '([^']+)'") { $pend = $Matches[1] }
+            elseif ($_ -match "EffectFinding: Found '([^']+)'") {
+                $n = $Matches[1].Trim()
+                if ($n) { if ($pend) { $mapa[$pend] = $n }; $descubiertos += $n; $pend = '' }
+            }
+            elseif ($_ -match "EffectLoading: Loaded '([^']+)'") {
+                $n = $Matches[1].Trim()
+                if ($n) { if ($pend) { $mapa[$pend] = $n }; $descubiertos += $n; $pend = '' }
+            }
+        }
+    }
+$descubiertos = @($descubiertos | Sort-Object -Unique)
+$nombres = @(($nombres + $descubiertos) | Sort-Object -Unique)
+
 $nombres = @($nombres | Where-Object { $_ } | Sort-Object -Unique)
 if ($nombres.Count -eq 0) {
     Log "sincronizar: no se encontraron efectos instalados (lista sin cambios)"
@@ -49,42 +74,64 @@ if ($nombres.Count -eq 0) {
 }
 
 # conservar el ORDEN personalizado: los temas ocultos (#) vuelven a su posicion
-# original con el refresco (si siguen instalados); quitar los desinstalados
-# y agregar los nuevos al final
-$finales = @()
+# original con el refresco; los efectos con "<ID>; Nombre" (remotos) se conservan
+# siempre porque no hay forma local de saber si siguen instalados
+$deNombre = @{}
+foreach ($k in $mapa.Keys) { if (-not $deNombre.ContainsKey($mapa[$k])) { $deNombre[$mapa[$k]] = $k } }
+
+$enArchivo = @()
 Get-Content $temasFile -EA SilentlyContinue | ForEach-Object {
     $l = $_.Trim()
     $oculto = $l.StartsWith('#')
     if ($oculto) { $l = $l.Substring(1).Trim() }
     if ($l -eq '') { return }
-    if ($l -match '^\d{1,2}:\d{2}\s*;\s*(.+)$') { $l = $Matches[1].Trim() }
-    if (-not $l) { return }
-    if ($oculto) {
-        # solo recupera si sigue instalado (los comentarios de cabecera se ignoran solos)
-        if ($nombres -contains $l) { $finales += $l }
-        return
+    $nombre = $l
+    $efecto = $l
+    if ($l -match '^([^;]+?)\s*;\s*(.+)$') {
+        $nombre = $Matches[2].Trim()
+        $pref = $Matches[1].Trim()
+        $efecto = if ($pref -match '^\d{1,2}:\d{2}$') { $nombre } else { $pref }
     }
-    $finales += $l
+    if (-not $nombre) { return }
+    $enArchivo += [PSCustomObject]@{ Nombre = $nombre; Efecto = $efecto }
 }
-$listaFinal = @(@($finales | Select-Object -Unique) | Where-Object { $nombres -contains $_ })
-$nuevos = @($nombres | Where-Object { $listaFinal -notcontains $_ })
-$listaFinal = @($listaFinal) + $nuevos
+
+# dedupe por nombre conservando orden
+$vistos = @()
+$enOrden = @()
+foreach ($e in $enArchivo) {
+    if ($vistos -notcontains $e.Nombre) { $vistos += $e.Nombre; $enOrden += $e }
+}
+$mantenidos = @($enOrden | Where-Object { ($nombres -contains $_.Nombre) -or ($_.Efecto -ne $_.Nombre) })
+$nombresEnLista = @($mantenidos | ForEach-Object { $_.Nombre })
+$nuevos = @($nombres | Where-Object { $nombresEnLista -notcontains $_ })
+$listaFinal = @($mantenidos)
+foreach ($n in $nuevos) {
+    $ef = if ($deNombre.ContainsKey($n)) { $deNombre[$n] } else { $n }
+    $listaFinal += [PSCustomObject]@{ Nombre = $n; Efecto = $ef }
+}
+
+$listaLineas = @($listaFinal | ForEach-Object {
+    if ($_.Efecto -ne $_.Nombre) { "$($_.Efecto); $($_.Nombre)" } else { $_.Nombre }
+})
 
 $contenido = @(
     "# Temas RGB: lista sincronizada desde SignalRGB (boton Actualizar del widget)"
     "# Un efecto por linea (nombre EXACTO). El orden personalizado se conserva;"
     "# los efectos nuevos se agregan al final."
+    "# Los efectos remotos de SignalRGB van como '<ID>; Nombre' y el widget los"
+    "# aplica por su ID (solo aparecen tras usarlos una vez en SignalRGB)."
     ""
-) + $listaFinal
+) + $listaLineas
 Set-Content -Path $temasFile -Value $contenido -ErrorAction SilentlyContinue
-Log ("sincronizado: {0} efectos ({1})" -f $listaFinal.Count, ($listaFinal -join ', '))
+Log ("sincronizado: {0} efectos ({1})" -f $listaFinal.Count, (($listaFinal | ForEach-Object { $_.Nombre }) -join ', '))
 
 # publicar en el registro para el widget
 try {
     if (-not (Test-Path 'HKCU:\Software\TemasRGB')) { New-Item -Path 'HKCU:\Software\TemasRGB' | Out-Null }
     Set-ItemProperty -Path 'HKCU:\Software\TemasRGB' -Name 'NTemas' -Value ([Math]::Min($listaFinal.Count, 20))
     for ($i = 1; $i -le 20; $i++) {
-        $v = if ($i -le $listaFinal.Count) { $listaFinal[$i - 1] } else { '' }
+        $v = if ($i -le $listaFinal.Count) { $listaFinal[$i - 1].Nombre } else { '' }
         Set-ItemProperty -Path 'HKCU:\Software\TemasRGB' -Name ("T{0}" -f $i) -Value $v
     }
 } catch {}

@@ -103,6 +103,7 @@ Todo son scripts planos: se pueden leer y modificar con cualquier editor. Para e
 
 - **No cambia el tema**: revisa que SignalRGB esté corriendo y mira `Herramienta\temas.log`
 - **La lista está vacía**: pulsa el ⟳ de la cabecera (o verifica que tengas efectos instalados en SignalRGB)
+- **Un efecto nuevo no aparece al refrescar**: los efectos recientes de SignalRGB se guardan *remotos*. Úsalo una vez en SignalRGB y vuelve a pulsar ⟳ (el sincronizador lo detecta del registro de la app)
 - **La letra se ve borrosa**: vuelve a ejecutar `Iniciar.vbs` (aplica el fix de DPI automáticamente)
 - Los cambios de tema tardan hasta ~6 s en aplicarse: SignalRGB tiene un período de gracia interno (es normal)
 
