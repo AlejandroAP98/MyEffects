@@ -56,10 +56,12 @@ Get-ChildItem (Join-Path $env:LOCALAPPDATA 'WhirlwindFX\SignalRgb\Logs') -Filter
             elseif ($_ -match "EffectFinding: Searching for '([^']+)'") { $pend = $Matches[1] }
             elseif ($_ -match "EffectFinding: Found '([^']+)'") {
                 $n = $Matches[1].Trim()
+                if ($n -match '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$') { $pend = ''; continue }
                 if ($n) { if ($pend) { $mapa[$pend] = $n }; $descubiertos += $n; $pend = '' }
             }
             elseif ($_ -match "EffectLoading: Loaded '([^']+)'") {
                 $n = $Matches[1].Trim()
+                if ($n -match '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$') { $pend = ''; continue }
                 if ($n) { if ($pend) { $mapa[$pend] = $n }; $descubiertos += $n; $pend = '' }
             }
         }
