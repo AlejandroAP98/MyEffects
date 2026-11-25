@@ -1,4 +1,4 @@
-# Temas RGB: motor + comandos para el widget (SignalRGB, sin Pro)
+﻿# Temas RGB: motor + comandos para el widget (SignalRGB, sin Pro)
 # Uso:
 #   Residente (publica lista + rotacion):  powershell -File Temas-RGB.ps1 -Motor
 #   Siguiente / anterior:                  ... -Siguiente | -Anterior
@@ -132,6 +132,16 @@ function Aplicar-Efecto($efecto) {
     try {
         Start-Process -FilePath $launcher -ArgumentList $urlArg -WindowStyle Hidden
         Set-Content -Path $marca -Value (Get-Date) -ErrorAction SilentlyContinue
+        # modo ahorro: la app vive solo lo necesario para aplicar el efecto;
+        # el controlador de luces retiene el estado sin la app abierta
+        $ahorro = 1
+        try { $ahorro = [int]((Get-ItemProperty $regKey -EA SilentlyContinue).Ahorro) } catch {}
+        if ($ahorro -ne 0) {
+            $estaba = [bool](Get-Process -Name SignalRgb -EA SilentlyContinue)
+            if (-not $estaba) {
+                Start-Process powershell -ArgumentList '-NoProfile','-WindowStyle','Hidden','-Command','Start-Sleep 25; Stop-Process -Name SignalRgb -Force -ErrorAction SilentlyContinue' -WindowStyle Hidden
+            }
+        }
         return $true
     } catch {
         Log ("ERROR al aplicar '{0}': {1}" -f $efecto, $_.Exception.Message)
@@ -311,3 +321,4 @@ while ($true) {
     }
     Start-Sleep -Seconds 60
 }
+
